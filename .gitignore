@@ -1,0 +1,8 @@
+# Réglages locaux de Claude Code
+.claude/
+
+# Archive de déploiement Netlify (régénérable)
+*.zip
+
+# Dépendances éventuelles
+node_modules/

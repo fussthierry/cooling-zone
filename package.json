@@ -1,0 +1,12 @@
+{
+  "name": "cooling-zone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA hors ligne de suivi de la récupération cardiaque des chevaux en zone de récupération (cross, concours complet FEI).",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "icons": "node tools/make-icons.mjs"
+  }
+}

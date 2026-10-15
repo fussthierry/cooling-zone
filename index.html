@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Suivi de la récupération cardiaque des chevaux en zone de récupération.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Cooling zone">
+  <title>Cooling zone</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">
+      <h1>Cooling zone <span class="brand-by">by <span class="brand-name">OpenIAvet</span></span></h1>
+      <span id="counts" class="counts"></span>
+    </div>
+    <button id="btn-settings" class="icon-btn" type="button" aria-label="Paramètres">⚙</button>
+  </header>
+
+  <main id="view-list" class="list-view">
+    <p id="empty" class="empty">Aucun cheval enregistré.<br>Touchez « Nouvelle arrivée » pour commencer.</p>
+    <ol id="horse-list" class="horse-list"></ol>
+  </main>
+
+  <nav class="actionbar">
+    <button id="btn-arrival" class="btn btn-primary" type="button">Nouvelle arrivée</button>
+    <button id="btn-measure" class="btn btn-primary" type="button">Nouvelle mesure</button>
+  </nav>
+
+  <!-- Nouvelle arrivée -->
+  <section id="screen-arrival" class="screen" hidden aria-labelledby="arrival-title">
+    <header class="screen-head">
+      <button class="btn-back" type="button" data-close>‹ Retour</button>
+      <h2 id="arrival-title">Nouvelle arrivée</h2>
+    </header>
+    <form id="form-arrival" class="screen-body" novalidate autocomplete="off">
+      <label class="field-label" for="arrival-bib">Numéro de dossard</label>
+      <input id="arrival-bib" class="bib-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" enterkeyhint="done">
+      <p id="arrival-msg" class="msg" role="alert"></p>
+      <button class="btn btn-primary btn-xl" type="submit">Valider l'arrivée</button>
+    </form>
+  </section>
+
+  <!-- Nouvelle mesure -->
+  <section id="screen-measure" class="screen" hidden aria-label="Mesure de la fréquence cardiaque">
+    <div data-stage="bib">
+      <header class="screen-head">
+        <button class="btn-back" type="button" data-close>‹ Retour</button>
+        <h2>Nouvelle mesure</h2>
+      </header>
+      <form id="form-measure-bib" class="screen-body" novalidate autocomplete="off">
+        <label class="field-label" for="measure-bib">Numéro de dossard</label>
+        <input id="measure-bib" class="bib-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" enterkeyhint="go">
+        <p id="measure-bib-msg" class="msg" role="alert"></p>
+        <button id="measure-start" class="btn btn-primary btn-xl" type="submit">Commencer la mesure</button>
+      </form>
+    </div>
+
+    <div data-stage="tap" class="tap-stage">
+      <div class="tap-head">
+        <span>Dossard <strong id="tap-bib" class="tap-bib"></strong></span>
+        <span id="tap-beats" class="tap-beats"></span>
+      </div>
+      <button id="tap-btn" class="tap-btn" type="button">
+        <span id="tap-label" class="tap-label"></span>
+        <span id="tap-chrono" class="tap-chrono">0,0 s</span>
+      </button>
+      <div class="tap-foot">
+        <button id="tap-cancel" class="btn btn-secondary" type="button">Annuler</button>
+        <button id="tap-manual" class="btn-link" type="button">Saisir une valeur</button>
+      </div>
+    </div>
+
+    <div data-stage="manual">
+      <header class="screen-head">
+        <button class="btn-back" type="button" data-close>‹ Annuler</button>
+        <h2>Saisir une valeur</h2>
+      </header>
+      <form id="form-manual" class="screen-body" novalidate autocomplete="off">
+        <p class="hint">Dossard <strong id="manual-bib"></strong> — FC mesurée par un autre moyen.</p>
+        <label class="field-label" for="manual-bpm">Fréquence cardiaque (bpm)</label>
+        <input id="manual-bpm" class="bib-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" enterkeyhint="done">
+        <p id="manual-msg" class="msg" role="alert"></p>
+        <button class="btn btn-primary btn-xl" type="submit">Enregistrer</button>
+        <button id="manual-back" class="btn-link" type="button">Revenir à la mesure au tap</button>
+      </form>
+    </div>
+
+    <div data-stage="result" class="result-stage">
+      <div id="result-card" class="result-card">
+        <div class="result-bib">Dossard <strong id="result-bib"></strong></div>
+        <div class="result-bpm"><span id="result-bpm"></span> <small>bpm</small></div>
+        <div id="result-status" class="result-status"></div>
+        <div id="result-detail" class="result-detail"></div>
+      </div>
+      <button id="result-done" class="btn btn-primary btn-xl" type="button">Terminé</button>
+      <button id="result-redo" class="btn-link" type="button">Refaire la mesure (supprime celle-ci)</button>
+    </div>
+  </section>
+
+  <!-- Paramètres -->
+  <section id="screen-settings" class="screen" hidden aria-labelledby="settings-title">
+    <header class="screen-head">
+      <button class="btn-back" type="button" data-close>‹ Retour</button>
+      <h2 id="settings-title">Paramètres</h2>
+    </header>
+    <form id="form-settings" class="screen-body" novalidate autocomplete="off">
+      <label class="field-label" for="set-threshold">Seuil de FC (bpm)</label>
+      <input id="set-threshold" class="num-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3">
+      <p class="hint">Mesure ≤ seuil : verte, cheval libéré. Un changement ne s'applique qu'aux mesures suivantes.</p>
+
+      <label class="field-label" for="set-beats">Nombre de battements N</label>
+      <input id="set-beats" class="num-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2">
+      <p class="hint">Le chrono démarre au 1er battement et s'arrête au Nième (minimum 2).</p>
+
+      <p id="settings-msg" class="msg" role="alert"></p>
+      <button class="btn btn-primary btn-xl" type="submit">Enregistrer les paramètres</button>
+
+      <div class="danger-zone">
+        <h3>Nouveau concours</h3>
+        <p class="hint">Supprime tous les chevaux et toutes les mesures. Les paramètres sont conservés.</p>
+        <button id="btn-clear" class="btn btn-danger" type="button">Effacer toutes les données</button>
+      </div>
+
+      <p id="offline-status" class="hint offline-status"></p>
+    </form>
+  </section>
+
+  <dialog id="modal" class="modal" aria-labelledby="modal-title">
+    <h2 id="modal-title" class="modal-title"></h2>
+    <p id="modal-message" class="modal-message"></p>
+    <div id="modal-actions" class="modal-actions"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
